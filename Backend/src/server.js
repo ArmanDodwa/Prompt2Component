@@ -24,7 +24,8 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 // 2. Mount it as global middleware BEFORE your routes
-app.use("/", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/components", componentRoutes);
 
 app.use(errorHandler);
 

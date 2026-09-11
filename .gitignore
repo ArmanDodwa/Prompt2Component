@@ -31,7 +31,4 @@ Thumbs.db
 .idea/
 
 # Local test outputs and sandbox runners
-tests/output/
-tests/manual/*.local.js
-tests/sandbox/
-.test.env
+tests/

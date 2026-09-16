@@ -15,31 +15,52 @@ export const generateComponentStream = async (req, res) => {
   res.flushHeaders?.();
 
   // Send initial connection event
-  res.write(`data: ${JSON.stringify({ status: "connected", message: "Agent pipeline initialized." })}\n\n`);
+  res.write(
+    `data: ${JSON.stringify({
+      status: "connected",
+      message: "Agent pipeline initialized.",
+    })}\n\n`
+  );
 
   try {
+    // 1. Initial State matching state.js channels
     const stream = await componentGraph.stream({
       userPrompt: prompt,
       plan: null,
       code: "",
-      errorLogs: [],
+      fileName: "Component.jsx",
+      explanation: "",
+      dependencies: [],
+      errors: [],
       iterationCount: 0,
       isValid: false,
     });
 
+    // 2. Accumulate graph state across steps so later nodes don't wipe out earlier data
+    let accumulatedState = {
+      node: null,
+      plan: null,
+      code: "",
+      fileName: "Component.jsx",
+      explanation: "",
+      dependencies: [],
+      errors: [],
+      isValid: false,
+      iterationCount: 0,
+    };
+
     for await (const chunk of stream) {
       const [nodeName, nodeOutput] = Object.entries(chunk)[0];
 
-      const payload = {
+      // Merge newly finished node's outputs onto the accumulated state
+      accumulatedState = {
+        ...accumulatedState,
+        ...nodeOutput,
         node: nodeName,
-        plan: nodeOutput.plan || null,
-        code: nodeOutput.code || null,
-        errorLogs: nodeOutput.errorLogs || [],
-        isValid: nodeOutput.isValid ?? null,
-        iterationCount: nodeOutput.iterationCount ?? null,
       };
 
-      res.write(`data: ${JSON.stringify(payload)}\n\n`);
+      // Send the complete up-to-date state at every step
+      res.write(`data: ${JSON.stringify(accumulatedState)}\n\n`);
     }
 
     // End of stream signal
@@ -50,7 +71,9 @@ export const generateComponentStream = async (req, res) => {
     res.write(
       `data: ${JSON.stringify({
         error: true,
-        message: error.message || "Failed to generate component due to an internal agent error.",
+        message:
+          error.message ||
+          "Failed to generate component due to an internal agent error.",
       })}\n\n`
     );
     res.end();
@@ -63,11 +86,14 @@ export const generateComponentStream = async (req, res) => {
  */
 export const saveComponent = async (req, res) => {
   try {
-    const { title, prompt, plan, code, tags } = req.body;
+    const { title, prompt, plan, code, fileName, explanation, dependencies, tags } =
+      req.body;
     const userId = req.user?.id || req.user?._id;
 
     if (!userId) {
-      return res.status(401).json({ success: false, message: "Unauthorized. User ID missing." });
+      return res
+        .status(401)
+        .json({ success: false, message: "Unauthorized. User ID missing." });
     }
 
     const newComponent = await Component.create({
@@ -76,6 +102,9 @@ export const saveComponent = async (req, res) => {
       prompt,
       plan,
       code,
+      fileName,
+      explanation,
+      dependencies,
       tags,
     });
 
@@ -86,7 +115,9 @@ export const saveComponent = async (req, res) => {
     });
   } catch (error) {
     console.error("Save Component Error:", error);
-    return res.status(500).json({ success: false, message: "Server error while saving component." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error while saving component." });
   }
 };
 
@@ -107,7 +138,9 @@ export const getUserComponents = async (req, res) => {
     });
   } catch (error) {
     console.error("Get Components Error:", error);
-    return res.status(500).json({ success: false, message: "Server error while fetching components." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error while fetching components." });
   }
 };
 
@@ -122,12 +155,16 @@ export const getComponentById = async (req, res) => {
 
     const component = await Component.findOne({ _id: id, userId });
     if (!component) {
-      return res.status(404).json({ success: false, message: "Component not found." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Component not found." });
     }
 
     return res.status(200).json({ success: true, data: component });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error fetching component." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error fetching component." });
   }
 };
 
@@ -142,11 +179,17 @@ export const deleteComponent = async (req, res) => {
 
     const deleted = await Component.findOneAndDelete({ _id: id, userId });
     if (!deleted) {
-      return res.status(404).json({ success: false, message: "Component not found or unauthorized." });
+      return res
+        .status(404)
+        .json({ success: false, message: "Component not found or unauthorized." });
     }
 
-    return res.status(200).json({ success: true, message: "Component deleted successfully." });
+    return res
+      .status(200)
+      .json({ success: true, message: "Component deleted successfully." });
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error deleting component." });
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error deleting component." });
   }
 };

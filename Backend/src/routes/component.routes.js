@@ -7,7 +7,7 @@ import {
   deleteComponent,
 } from "../controllers/component.controller.js";
 import { validate, generateComponentSchema, saveComponentSchema } from "../schemas/component.schema.js";
-import { verifyToken } from "../middleware/auth.middleware.js";
+import { verifyToken } from "../controllers/auth.controller.js";
 
 const router = Router();
 

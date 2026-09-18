@@ -4,7 +4,7 @@ import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
-import { registerUser, saveAuthData } from '@/services/auth.service';
+import { registerUser, tokenStorage } from '@/services/auth.service';
 import { RegisterPayload, ApiErrorResponse } from '@/types/auth.types';
 
 export default function RegisterForm() {
@@ -29,7 +29,7 @@ export default function RegisterForm() {
 
     try {
       const response = await registerUser(formData);
-      saveAuthData(response);
+      tokenStorage.saveAuthData(response);
       router.push('/');
     } catch (err: unknown) {
       if (axios.isAxiosError<ApiErrorResponse>(err)) {

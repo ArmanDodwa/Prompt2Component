@@ -9,10 +9,19 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@monaco-editor/react": "^4.7.0",
     "axios": "^1.20.0",
+    "lucide-react": "^1.47.0",
     "next": "16.3.3",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "react-live": "^4.1.8"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "^3.2.4"
+    },
+    "dompurify": "^3.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

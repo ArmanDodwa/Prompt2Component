@@ -1,13 +1,8 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import {
-  getAccessToken,
-  getRefreshToken,
-  setAccessToken,
-  clearAuthData,
-} from '@/services/auth.service';
+import { tokenStorage } from '@/services/auth.service';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5001/api',
+  baseURL: process.env.BACKEND_API_BASE_URL || 'http://localhost:5001/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -16,7 +11,7 @@ const api = axios.create({
 // Attach access token to headers
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = getAccessToken();
+    const token = tokenStorage.getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -72,22 +67,22 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = getRefreshToken();
+      const refreshToken = tokenStorage.getRefreshToken();
       if (!refreshToken) {
-        clearAuthData();
+        tokenStorage.clearAuthData();
         if (typeof window !== 'undefined') window.location.href = '/login';
         return Promise.reject(error);
       }
 
       try {
-        // Call backend refresh route using a clean axios instance (avoids loop)
+        // Call backend refresh route using a clean axios instance (avoids interceptor loop)
         const response = await axios.post<{ accessToken: string }>(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5001/api'}/refresh`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5001/api'}/auth/refresh`,
           { refreshToken }
         );
 
         const newAccessToken = response.data.accessToken;
-        setAccessToken(newAccessToken);
+        tokenStorage.setAccessToken(newAccessToken);
 
         processQueue(null, newAccessToken);
 
@@ -97,7 +92,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshErr) {
         processQueue(refreshErr, null);
-        clearAuthData();
+        tokenStorage.clearAuthData();
         if (typeof window !== 'undefined') {
           window.location.href = '/login';
         }

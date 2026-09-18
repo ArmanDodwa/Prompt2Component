@@ -4,7 +4,7 @@ import { useState, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import axios from 'axios';
-import { loginUser, saveAuthData } from '@/services/auth.service';
+import { loginUser, tokenStorage } from '@/services/auth.service';
 import { LoginPayload, ApiErrorResponse } from '@/types/auth.types';
 
 export default function LoginForm() {
@@ -25,7 +25,7 @@ export default function LoginForm() {
 
     try {
       const response = await loginUser(formData);
-      saveAuthData(response);
+      tokenStorage.saveAuthData(response);
       router.push('/');
     } catch (err: unknown) {
       if (axios.isAxiosError<ApiErrorResponse>(err)) {

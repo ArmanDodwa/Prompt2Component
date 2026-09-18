@@ -59,6 +59,8 @@ export const generateComponentStream = async (req, res) => {
         node: nodeName,
       };
 
+      console.log(`data: ${JSON.stringify(accumulatedState)}\n\n`);
+
       // Send the complete up-to-date state at every step
       res.write(`data: ${JSON.stringify(accumulatedState)}\n\n`);
     }

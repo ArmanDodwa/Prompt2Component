@@ -1,31 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
+import { Navbar } from "@/components/builder/Navbar";
+import { Sidebar } from "@/components/builder/Sidebar";
 import { CodeEditor } from "@/components/builder/CodeEditor";
 import { ComponentPreview } from "@/components/builder/ComponentPreview";
+import { VisualProperties } from "@/components/builder/VisualProperties";
 import { PromptInput } from "@/components/builder/PromptInput";
-import { Toolbar } from "@/components/builder/Toolbar";
 import { generateComponentCode } from "@/services/component.service";
 import { GeneratedComponentState } from "@/types/component.types";
 import { tokenStorage } from "@/services/auth.service";
-
-const INITIAL_CODE = `function WelcomeCard() {
-  return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <h2 className="text-2xl font-bold text-neutral-900 dark:text-white mb-2">
-        Prompt2Component
-      </h2>
-      <p className="text-neutral-600 dark:text-neutral-400 text-sm max-w-sm">
-        Enter a prompt in the input below to generate your custom React component.
-      </p>
-    </div>
-  );
-}`;
+import { INITIAL_CODE } from "@/components/builder/InitialCode";
 
 export default function BuilderPage() {
   const [code, setCode] = useState<string>(INITIAL_CODE);
   const [deviceMode, setDeviceMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
+  const [viewMode, setViewMode] = useState<"visual" | "preview" | "code">("visual");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false); 
   const [componentMeta, setComponentMeta] = useState<Partial<GeneratedComponentState>>({
     fileName: "WelcomeCard.jsx",
     isValid: true,
@@ -45,13 +37,8 @@ export default function BuilderPage() {
         return;
       }
       const result = await generateComponentCode({ prompt: String(prompt) }, token);
-      console.log("#################################")
-      console.log("#################################")
-      console.log("#################################") 
       console.log("Generated component result:", result);
-       console.log("#################################")
-      console.log("#################################")
-      console.log("#################################")
+
       if (result.code) {
         setCode(result.code);
       }
@@ -70,38 +57,57 @@ export default function BuilderPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col bg-neutral-950 text-neutral-100">
-      <Toolbar
-        fileName={componentMeta.fileName || "Component.jsx"}
-        code={code}
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#07080c] text-slate-100 font-sans select-none">
+      {/* 1. Full-Width Top Navigation Bar */}
+      <Navbar 
+        onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
         deviceMode={deviceMode}
-        setDeviceMode={setDeviceMode}
-        isValid={componentMeta.isValid}
+        onDeviceChange={setDeviceMode}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
       />
 
-      {/* Editor & Preview Split Workspace */}
-      <div className="grid flex-1 grid-cols-1 gap-3 overflow-hidden p-3 lg:grid-cols-2">
-        <div className="flex h-full flex-col overflow-hidden">
-          <CodeEditor
-            code={code}
-            onChange={setCode}
-            language="javascript"
-            theme="vs-dark"
-          />
-        </div>
-        <div className="flex h-full flex-col overflow-hidden">
-          <ComponentPreview code={code} deviceMode={deviceMode} />
-        </div>
-      </div>
+      {/* Main Content Area */}
+      <div className="flex flex-1 overflow-hidden relative">
+        {/* Sidebar */}
+        {isSidebarOpen && <Sidebar />}
 
-      {/* Prompt Console Bar */}
-      <div className="border-t border-neutral-800 bg-neutral-900/80 p-4">
-        <div className="mx-auto max-w-4xl">
-          <PromptInput
-            onGenerate={handleGenerate}
-            isLoading={isLoading}
-            iterationCount={componentMeta.iterationCount}
-          />
+        {/* Right Content Wrapper */}
+        <div className="flex flex-col flex-1 h-full overflow-hidden">
+          {/* Workspace Layout */}
+          <div className="grid flex-1 grid-cols-1 gap-2 overflow-hidden p-2 lg:grid-cols-12 bg-[#07080c]">
+            
+            {/* Component Preview / Canvas (Added relative positioning to host the floating prompt) */}
+            <div className="flex h-full flex-col overflow-hidden lg:col-span-9 relative">
+              <ComponentPreview code={code} deviceMode={deviceMode} />
+
+              {/* Floating Prompt Bar */}
+              <div className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto">
+                <div className="mx-auto max-w-3xl backdrop-blur-md bg-[#0d0e15]/90 border border-slate-700/60 rounded-xl shadow-2xl px-4 py-2.5">
+                  <PromptInput
+                    onGenerate={handleGenerate}
+                    isLoading={isLoading}
+                    iterationCount={componentMeta.iterationCount}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Code Editor & Visual Properties */}
+            <div className="flex h-full flex-col overflow-hidden lg:col-span-3 gap-2">
+              <div className="h-[52%] overflow-hidden">
+                <CodeEditor
+                  code={code}
+                  onChange={setCode}
+                  language="javascript"
+                  theme="vs-dark"
+                />
+              </div>
+              <div className="h-[48%] overflow-hidden">
+                <VisualProperties />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

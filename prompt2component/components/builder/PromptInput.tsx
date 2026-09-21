@@ -37,15 +37,15 @@ export const PromptInput: React.FC<PromptInputProps> = ({
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Describe a component... (e.g. 'Modern pricing table with 3 tiers and billing toggle')"
+          placeholder="Add a subtle glow ring to heading and enlarge font to text-3xl"
           disabled={isLoading}
-          className="w-full resize-none rounded-xl border border-neutral-800 bg-neutral-900/90 py-3 pl-4 pr-14 text-sm text-neutral-100 placeholder-neutral-500 shadow-inner outline-none transition focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600 disabled:opacity-50"
+          className="w-full resize-none rounded-xl border border-slate-800 bg-[#12131c] py-3 pl-4 pr-14 text-sm text-slate-100 placeholder-slate-500 shadow-inner outline-none transition focus:border-slate-600 focus:ring-1 focus:ring-slate-600 disabled:opacity-50 font-sans"
         />
 
         <button
           type="submit"
           disabled={isLoading || !prompt.trim()}
-          className="absolute right-3 flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-neutral-800 disabled:text-neutral-500"
+          className="absolute right-3 flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-slate-800 disabled:text-slate-500 shadow-md shadow-indigo-600/30"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -55,13 +55,16 @@ export const PromptInput: React.FC<PromptInputProps> = ({
         </button>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-neutral-400">
-        <span className="flex items-center gap-1">
-          <Sparkles className="h-3 w-3 text-indigo-400" />
-          Press Enter to generate, Shift+Enter for new line
+      <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+        <span className="flex items-center gap-1.5 font-mono text-[11px]">
+          <span className="text-slate-500">Press</span>
+          <span className="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">#Enter</span>
+          <span className="text-slate-500">to generate</span>
+          <span className="text-slate-600">·</span>
+          <span className="text-indigo-400">Visual edit sync directly to code</span>
         </span>
         {iterationCount > 0 && (
-          <span className="rounded bg-neutral-800 px-2 py-0.5 font-mono text-[11px] text-neutral-300">
+          <span className="rounded bg-slate-800 px-2 py-0.5 font-mono text-[11px] text-slate-300 border border-slate-700">
             Iteration: {iterationCount}
           </span>
         )}

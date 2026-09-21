@@ -77,7 +77,7 @@ export default function HomePage() {
         </p>
         <div className="mt-8 flex gap-4">
           <Link
-            href="/builder"
+            href="/builder2"
             className="rounded-md bg-indigo-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-indigo-500"
           >
             Launch Builder

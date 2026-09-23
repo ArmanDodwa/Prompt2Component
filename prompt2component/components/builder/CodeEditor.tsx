@@ -2,25 +2,26 @@
 
 import React from "react";
 import Editor, { OnMount } from "@monaco-editor/react";
-import { Code2, Sliders} from "lucide-react";
+import { Code2, Sliders } from "lucide-react";
+import { useBuilderStore } from "@/store/builderStore";
 
 interface CodeEditorProps {
-  code: string;
-  onChange: (value: string) => void;
   language?: string;
   theme?: "vs-dark" | "light";
   readOnly?: boolean;
 }
 
 export const CodeEditor: React.FC<CodeEditorProps> = ({
-  code,
-  onChange,
   language = "javascript",
   theme = "vs-dark",
   readOnly = false,
 }) => {
+  // Pull code and setter directly from Zustand store
+  const code = useBuilderStore((state) => state.code);
+  const setCode = useBuilderStore((state) => state.setCode);
+
   const handleEditorChange = (val: string | undefined) => {
-    onChange(val || "");
+    setCode(val || "");
   };
 
   const handleEditorDidMount: OnMount = (editor, monaco) => {
@@ -48,8 +49,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
           </button>
         </div>
       </div>
-
-  
 
       {/* Monaco Wrapper */}
       <div className="relative flex-1 w-full overflow-hidden bg-[#1e1e1e]">

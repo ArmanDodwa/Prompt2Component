@@ -12,12 +12,24 @@ import { GeneratedComponentState } from "@/types/component.types";
 import { tokenStorage } from "@/services/auth.service";
 import { INITIAL_CODE } from "@/components/builder/InitialCode";
 
+// Define the interface for selected element data
+export interface SelectedElementData {
+  tagName: string;
+  className: string;
+  text: string;
+  rect: DOMRect;
+}
+
 export default function BuilderPage() {
   const [code, setCode] = useState<string>(INITIAL_CODE);
   const [deviceMode, setDeviceMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const [viewMode, setViewMode] = useState<"visual" | "preview" | "code">("visual");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false); 
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+  
+  // State to hold the currently selected element data from the preview
+  const [selectedElement, setSelectedElement] = useState<SelectedElementData | null>(null);
+
   const [componentMeta, setComponentMeta] = useState<Partial<GeneratedComponentState>>({
     fileName: "WelcomeCard.jsx",
     isValid: true,
@@ -77,9 +89,13 @@ export default function BuilderPage() {
           {/* Workspace Layout */}
           <div className="grid flex-1 grid-cols-1 gap-2 overflow-hidden p-2 lg:grid-cols-12 bg-[#07080c]">
             
-            {/* Component Preview / Canvas (Added relative positioning to host the floating prompt) */}
+            {/* Component Preview / Canvas */}
             <div className="flex h-full flex-col overflow-hidden lg:col-span-9 relative">
-              <ComponentPreview code={code} deviceMode={deviceMode} />
+              <ComponentPreview 
+                code={code} 
+                deviceMode={deviceMode} 
+                onSelectElement={(elementData) => setSelectedElement(elementData)}
+              />
 
               {/* Floating Prompt Bar */}
               <div className="absolute bottom-4 left-4 right-4 z-20 pointer-events-auto">
@@ -104,7 +120,7 @@ export default function BuilderPage() {
                 />
               </div>
               <div className="h-[48%] overflow-hidden">
-                <VisualProperties />
+                <VisualProperties selectedElement={selectedElement} />
               </div>
             </div>
           </div>
